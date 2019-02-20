@@ -31,10 +31,12 @@ import {
   IAssessmentOverview
 } from '../assessment/assessmentShape'
 import { OwnProps as AssessmentProps } from '../assessment/AssessmentWorkspace'
+import { EditingOverviewCard } from '../assessment/EditingOverviewCard'
 import { controlButton } from '../commons'
 import ContentDisplay from '../commons/ContentDisplay'
 import ImportFromFileComponent from '../commons/ImportFromFileComponent'
 import Markdown from '../commons/Markdown'
+// import { AnyAction } from 'redux';
 
 const DEFAULT_QUESTION_ID: number = 0
 
@@ -68,6 +70,8 @@ type State = {
   showClosedAssessments: boolean
   showOpenedAssessments: boolean
   showUpcomingAssessments: boolean
+  editOverview: string
+  editingOverview: IAssessmentOverview | null;
 }
 
 class Assessment extends React.Component<IAssessmentProps, State> {
@@ -80,31 +84,45 @@ class Assessment extends React.Component<IAssessmentProps, State> {
       betchaAssessment: null,
       showClosedAssessments: false,
       showOpenedAssessments: true,
-      showUpcomingAssessments: true
+      showUpcomingAssessments: true,
+      editOverview: '',
+      editingOverview: null
+    }
+  }
+
+  public componentDidMount(){
+    const editingOverviewStr = localStorage.getItem('MissionEditingOverviewSA');
+    if (editingOverviewStr) {
+      this.setState({
+        ...this.state,
+        editingOverview: JSON.parse(editingOverviewStr)
+      })
     }
   }
 
   public render() {
     const assessmentId: number | null = stringParamToInt(this.props.match.params.assessmentId)
     const questionId: number =
-      stringParamToInt(this.props.match.params.questionId) || DEFAULT_QUESTION_ID;
+      stringParamToInt(this.props.match.params.questionId) || DEFAULT_QUESTION_ID
 
     // If mission for testing is to render, create workspace
-    const editingOverview = localStorage.getItem("MissionEditingOverviewSA"); 
-    if (assessmentId === -1 && editingOverview) {
-      const overview = JSON.parse(editingOverview)
-      const assessmentProps: AssessmentProps = {
-        assessmentId,
-        questionId,
-        notAttempted: overview.status === AssessmentStatuses.not_attempted,
-        closeDate: overview.closeAt
+    if (assessmentId === -1) {
+      const editingOverviewStr = localStorage.getItem('MissionEditingOverviewSA');
+      if (editingOverviewStr){
+        const overview = JSON.parse(editingOverviewStr)
+        const assessmentProps: AssessmentProps = {
+          assessmentId,
+          questionId,
+          notAttempted: overview.status === AssessmentStatuses.not_attempted,
+          closeDate: overview.closeAt
+        }
+        return <AssessmentWorkspaceContainer {...assessmentProps} />
       }
-      return <AssessmentWorkspaceContainer {...assessmentProps} />
     }
 
     // If there is an assessment to render, create a workspace. The assessment
     // overviews must still be loaded for this, to send the due date.
-    if (assessmentId !== null && this.props.assessmentOverviews !== undefined) {
+    else if (assessmentId !== null && this.props.assessmentOverviews !== undefined) {
       const overview = this.props.assessmentOverviews.filter(a => a.id === assessmentId)[0]
       const assessmentProps: AssessmentProps = {
         assessmentId,
@@ -149,16 +167,13 @@ class Assessment extends React.Component<IAssessmentProps, State> {
           makeOverviewCard(overview, index, this.setBetchaAssessment, true, true)
         )
 
-      /** Mission editing card, stored in local storage and have index of -1. */
-      const missionEditingCard = editingOverview ? 
-        makeOverviewCard(
-          JSON.parse(editingOverview),
-          -1,
-          this.setBetchaAssessment,
-          true,
-          false
-        ) :
-        null;
+      /** Mission editing card */
+      const missionEditingCard = this.state.editingOverview
+        ? <EditingOverviewCard 
+          overview={this.state.editingOverview} 
+          updateEditingOverview={this.updateEditingOverview}
+          />
+        : null
 
       /** Render cards */
       const upcomingCardsCollapsible =
@@ -192,7 +207,9 @@ class Assessment extends React.Component<IAssessmentProps, State> {
         ) : null
       display = (
         <>
-          <ImportFromFileComponent />
+          <ImportFromFileComponent 
+            updateEditingOverview={this.updateEditingOverview}
+          />
           {missionEditingCard}
           {upcomingCardsCollapsible}
           {openedCardsCollapsible}
@@ -294,6 +311,12 @@ class Assessment extends React.Component<IAssessmentProps, State> {
       this.props.handleSubmitAssessment(this.state.betchaAssessment.id)
       this.setBetchaAssessmentNull()
     }
+  }
+
+  private updateEditingOverview = (overview: IAssessmentOverview) => {
+    this.setState({
+      editingOverview: overview
+    })
   }
 }
 

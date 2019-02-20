@@ -1,3 +1,4 @@
+import { Builder } from 'xml2js'
 import {
   AssessmentCategories,
   AssessmentStatuses,
@@ -12,6 +13,7 @@ import {
 } from '../components/assessment/assessmentShape'
 import {
   IXmlParseStrCProblem,
+  IXmlParseStrDeployment,
   IXmlParseStrOverview,
   IXmlParseStrPProblem,
   IXmlParseStrProblem,
@@ -67,7 +69,7 @@ const makeLibrary = (task: IXmlParseStrTask) : Library => {
   const external = task.DEPLOYMENT[0].EXTERNAL;
   const nameVal = external ? 
     external[0].$.name
-    : "NONE";
+    : 'NONE';
   const symbolsVal : string[]  = external ? 
     external[0].SYMBOL 
     : [];
@@ -143,6 +145,32 @@ const makeProgramming = (problem: IXmlParseStrPProblem, question: IQuestion): IP
   }
 }
 
+export const exportXml = () => {
+    const assessmentStr = localStorage.getItem("MissionEditingAssessmentSA");
+    const overviewStr = localStorage.getItem("MissionEditingOverviewSA")
+    if (assessmentStr && overviewStr){
+      const assessment: IAssessment = JSON.parse(assessmentStr);
+      const overview: IAssessmentOverview = JSON.parse(overviewStr);
+      const builder = new Builder();
+      const xmlTask : IXmlParseStrTask = assessmentToXml(assessment,overview);
+      const xml = {
+        $: {
+          "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance"
+        },
+        CONTENT: {
+          TASK: xmlTask
+        }
+      }
+      let xmlStr = builder.buildObject(xml);
+      xmlStr = xmlStr.replace(/(&#xD;)+/g, '');
+      const element = document.createElement("a");
+      const file = new Blob([xmlStr], {endings:"native", type:"text/xml;charset=UTF-8"});
+      element.href = URL.createObjectURL(file);
+      element.download = "myMission.xml";
+      element.click();
+    }
+  }
+
 
 export const assessmentToXml = (assessment: IAssessment, overview: IAssessmentOverview): IXmlParseStrTask => {
   const task: any = {};
@@ -156,44 +184,62 @@ export const assessmentToXml = (assessment: IAssessment, overview: IAssessmentOv
   };
   task.$ = rawOverview;
 
-  task.WEBSUMMARY = [overview.shortSummary];
-  task.TEXT = [assessment.longSummary];
-  task.PROBLEMS = [];
+  task.WEBSUMMARY = overview.shortSummary;
+  task.TEXT = assessment.longSummary;
+  task.PROBLEMS = {PROBLEM: []};
+
+  const library : Library = assessment.questions[0].library;
+  const deployment : IXmlParseStrDeployment = {
+    $: {
+      interpreter: library.chapter.toString()
+    },
+    EXTERNAL: [{
+      $: {
+        name: library.external.name,
+      },
+      SYMBOL: library.external.symbols,
+    }]
+  }
+
+  task.DEPLOYMENT = deployment;
 
   assessment.questions.forEach((question: IProgrammingQuestion | IMCQQuestion) => {
     const problem = {
       $: {
         type: question.type,
-        maxgrade: question.maxGrade,
-        maxxp: question.maxXp
+        maxgrade: question.maxGrade
       },
-      SNIPPET: [
-        {
-          SOLUTION: [question.answer],
-          TEMPLATE: [question.answer]
-        }
-      ],
-      TEXT: [question.content],
+      SNIPPET: {
+        SOLUTION: question.answer,
+        TEMPLATE: question.answer
+      },
+      TEXT: question.content,
       CHOICE: [] as any[],
     }
 
+    if (question.maxXp){
+      const maxxp = 'maxxp';
+      problem.$[maxxp] = question.maxXp;
+    }
+
     if (question.type === 'programming') {
-      problem.SNIPPET[0].TEMPLATE[0] = question.solutionTemplate;
+      problem.SNIPPET.TEMPLATE = question.solutionTemplate;
     }
 
     if (question.type === 'mcq') {
-      problem.SNIPPET[0].SOLUTION[0] = question.answer;
+      problem.SNIPPET.SOLUTION = question.answer;
       question.choices.forEach((choice: MCQChoice, i: number) => {
         problem.CHOICE.push({
           $: {
             correct: (question.solution === i) ? 'true' : 'false',
           },
-          TEXT: [choice.content],
+          TEXT: choice.content,
         })
       })
     }
 
-    task.PROBLEMS.push(problem);
+    task.PROBLEMS.PROBLEM.push(problem);
   });
+
   return task;
 }
