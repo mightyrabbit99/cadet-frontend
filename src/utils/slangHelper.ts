@@ -24,7 +24,11 @@ import { handleConsoleLog } from '../actions'
  *   which REPL the value shows up in.
  */
 function display(value: Value, workspaceLocation: any) {
-  display(stringify(value), workspaceLocation)
+  const output = stringify(value)
+  // TODO in 2019: fix this hack
+  if (typeof (window as any).__REDUX_STORE__ !== 'undefined') {
+    ;(window as any).__REDUX_STORE__.dispatch(handleConsoleLog(output, workspaceLocation))
+  }
   return value
 }
 
@@ -40,11 +44,7 @@ function display(value: Value, workspaceLocation: any) {
  *   which REPL the value shows up in.
  */
 function rawDisplay(value: Value, workspaceLocation: any) {
-  const output = String(value)
-  // TODO in 2019: fix this hack
-  if (typeof (window as any).__REDUX_STORE__ !== 'undefined') {
-    ;(window as any).__REDUX_STORE__.dispatch(handleConsoleLog(output, workspaceLocation))
-  }
+  display(String(value), workspaceLocation)
   return value
 }
 
