@@ -1,7 +1,8 @@
-import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux'
-import { bindActionCreators, Dispatch } from 'redux'
+import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux';
+import { bindActionCreators, Dispatch } from 'redux';
 
 import {
+  activateDebugger,
   beginDebuggerPause,
   beginInterruptExecution,
   browseReplHistoryDown,
@@ -11,6 +12,7 @@ import {
   changeSideContentHeight,
   chapterSelect,
   clearReplOutput,
+  deactivateDebugger,
   debuggerReset,
   debuggerResume,
   evalEditor,
@@ -20,21 +22,21 @@ import {
   updateHasUnsavedChanges,
   updateReplValue,
   WorkspaceLocation
-} from '../../../actions'
+} from '../../../actions';
 import {
   beginClearContext,
   resetWorkspace,
   updateCurrentSubmissionId
-} from '../../../actions/workspaces'
+} from '../../../actions/workspaces';
 import GradingWorkspace, {
   DispatchProps,
   OwnProps,
   StateProps
-} from '../../../components/academy/grading/GradingWorkspace'
-import { Library } from '../../../components/assessment/assessmentShape'
-import { IState, IWorkspaceState } from '../../../reducers/states'
+} from '../../../components/academy/grading/GradingWorkspace';
+import { Library } from '../../../components/assessment/assessmentShape';
+import { IState, IWorkspaceState } from '../../../reducers/states';
 
-const workspaceLocation: WorkspaceLocation = 'grading'
+const workspaceLocation: WorkspaceLocation = 'grading';
 
 const mapStateToProps: MapStateToProps<StateProps, OwnProps, IState> = (state, props) => {
   return {
@@ -45,14 +47,15 @@ const mapStateToProps: MapStateToProps<StateProps, OwnProps, IState> = (state, p
     hasUnsavedChanges: state.workspaces.grading.hasUnsavedChanges,
     isRunning: state.workspaces.grading.isRunning,
     isDebugging: state.workspaces.grading.isDebugging,
-    enableDebugging: state.workspaces.grading.enableDebugging,
+    debuggerActive: state.workspaces.grading.debuggerActive,
+    debuggerAllowed: state.workspaces.grading.debuggerAllowed,
     output: state.workspaces.grading.output,
     replValue: state.workspaces.grading.replValue,
     sideContentHeight: state.workspaces.grading.sideContentHeight,
     storedSubmissionId: state.workspaces.grading.currentSubmission,
     storedQuestionId: state.workspaces.grading.currentQuestion
-  }
-}
+  };
+};
 
 const mapDispatchToProps: MapDispatchToProps<DispatchProps, {}> = (dispatch: Dispatch<any>) =>
   bindActionCreators<DispatchProps>(
@@ -79,11 +82,13 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps, {}> = (dispatch: Dis
       handleUpdateCurrentSubmissionId: updateCurrentSubmissionId,
       handleUpdateHasUnsavedChanges: (unsavedChanges: boolean) =>
         updateHasUnsavedChanges(workspaceLocation, unsavedChanges),
-      handleDebuggerPause: () => beginDebuggerPause(workspaceLocation),
-      handleDebuggerResume: () => debuggerResume(workspaceLocation),
-      handleDebuggerReset: () => debuggerReset(workspaceLocation)
+        handleDebuggerPause: () => beginDebuggerPause(workspaceLocation),
+        handleDebuggerResume: (debuggerActive: boolean) => debuggerResume(workspaceLocation, debuggerActive),
+        handleDebuggerReset: () => debuggerReset(workspaceLocation),
+        handleActivateDebugger: () => activateDebugger(workspaceLocation),
+        handleDeactivateDebugger: () => deactivateDebugger(workspaceLocation),
     },
     dispatch
-  )
+  );
 
-export default connect(mapStateToProps, mapDispatchToProps)(GradingWorkspace)
+export default connect(mapStateToProps, mapDispatchToProps)(GradingWorkspace);

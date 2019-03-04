@@ -1,7 +1,8 @@
-import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux'
-import { bindActionCreators, Dispatch } from 'redux'
+import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux';
+import { bindActionCreators, Dispatch } from 'redux';
 
 import {
+  activateDebugger,
   beginClearContext,
   beginDebuggerPause,
   beginInterruptExecution,
@@ -12,6 +13,7 @@ import {
   changeSideContentHeight,
   chapterSelect,
   clearReplOutput,
+  deactivateDebugger,
   debuggerReset,
   debuggerResume,
   evalEditor,
@@ -21,19 +23,19 @@ import {
   updateEditorValue,
   updateHasUnsavedChanges,
   updateReplValue
-} from '../../actions'
+} from '../../actions';
 import {
   resetWorkspace,
   updateCurrentAssessmentId,
   WorkspaceLocation
-} from '../../actions/workspaces'
-import { Library } from '../../components/assessment/assessmentShape'
+} from '../../actions/workspaces';
+import { Library } from '../../components/assessment/assessmentShape';
 import AssessmentWorkspace, {
   DispatchProps,
   OwnProps,
   StateProps
-} from '../../components/assessment/AssessmentWorkspace'
-import { IState, IWorkspaceState } from '../../reducers/states'
+} from '../../components/assessment/AssessmentWorkspace';
+import { IState, IWorkspaceState } from '../../reducers/states';
 
 const mapStateToProps: MapStateToProps<StateProps, OwnProps, IState> = (state, props) => {
   return {
@@ -44,16 +46,17 @@ const mapStateToProps: MapStateToProps<StateProps, OwnProps, IState> = (state, p
     hasUnsavedChanges: state.workspaces.assessment.hasUnsavedChanges,
     isRunning: state.workspaces.assessment.isRunning,
     isDebugging: state.workspaces.assessment.isDebugging,
-    enableDebugging: state.workspaces.assessment.enableDebugging,
+    debuggerActive: state.workspaces.assessment.debuggerActive,
+    debuggerAllowed: state.workspaces.assessment.debuggerAllowed,
     output: state.workspaces.assessment.output,
     replValue: state.workspaces.assessment.replValue,
     sideContentHeight: state.workspaces.assessment.sideContentHeight,
     storedAssessmentId: state.workspaces.assessment.currentAssessment,
     storedQuestionId: state.workspaces.assessment.currentQuestion
-  }
-}
+  };
+};
 
-const workspaceLocation: WorkspaceLocation = 'assessment'
+const workspaceLocation: WorkspaceLocation = 'assessment';
 
 const mapDispatchToProps: MapDispatchToProps<DispatchProps, {}> = (dispatch: Dispatch<any>) =>
   bindActionCreators<DispatchProps>(
@@ -82,10 +85,12 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps, {}> = (dispatch: Dis
         updateHasUnsavedChanges(workspaceLocation, hasUnsavedChanges),
       handleUpdateCurrentAssessmentId: updateCurrentAssessmentId,
       handleDebuggerPause: () => beginDebuggerPause(workspaceLocation),
-      handleDebuggerResume: () => debuggerResume(workspaceLocation),
-      handleDebuggerReset: () => debuggerReset(workspaceLocation)
+        handleDebuggerResume: (debuggerActive: boolean) => debuggerResume(workspaceLocation, debuggerActive),
+        handleDebuggerReset: () => debuggerReset(workspaceLocation),
+        handleActivateDebugger: () => activateDebugger(workspaceLocation),
+        handleDeactivateDebugger: () => deactivateDebugger(workspaceLocation),
     },
     dispatch
-  )
+  );
 
-export default connect(mapStateToProps, mapDispatchToProps)(AssessmentWorkspace)
+export default connect(mapStateToProps, mapDispatchToProps)(AssessmentWorkspace);
