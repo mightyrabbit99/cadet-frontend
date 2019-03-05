@@ -309,10 +309,10 @@ let debuggerActivated: boolean = false;
 
 function* evalCode(code: string, context: Context, location: WorkspaceLocation, debuggerActive: boolean) {
   let temporaryResumeOnEval: boolean = false;
-  resetDebugger(context);
   if(context.debugger.toggled) {
     temporaryResumeOnEval = true;
     yield put(actions.deactivateDebugger(location));
+    resetDebugger(context);
     disableDebugger(context);
   } else {
     if(debuggerActivated && debuggerActive) {
