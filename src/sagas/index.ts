@@ -7,6 +7,7 @@ import {
   resetDebugger, 
   resume,
   runInContext, 
+  setBreakpointByLine
 } from 'js-slang';
 import { InterruptedError } from 'js-slang/dist/interpreter-errors';
 import { compressToEncodedURIComponent } from 'lz-string';
@@ -93,6 +94,7 @@ function* workspaceSaga(): SagaIterator {
     context = yield select(
       (state: IState) => (state.workspaces[location] as IWorkspaceState).context
     );
+    yield put(actions.highlightLineInEditor([], location));
     yield* evalRestofCode(code, context, location);
   });
 
@@ -119,6 +121,11 @@ function* workspaceSaga(): SagaIterator {
       lastDebuggerResult.context.debugger.enabled = false;
     }
     debuggerActivated = false;
+    yield;
+  });
+
+  yield takeEvery(actionTypes.SET_EDITOR_BREAKPOINTS, function*(action) {
+    setBreakpointByLine((action as actionTypes.IAction).payload.editorBreakpoints);
     yield;
   });
 
@@ -333,9 +340,13 @@ function* evalCode(code: string, context: Context, location: WorkspaceLocation, 
   if (result) {
     if (result.status === 'finished') {
       yield put(actions.evalInterpreterSuccess(result.value, location));
+      yield put(actions.highlightLineInEditor([], location));
     } else if (result.status === 'suspended') {
       lastDebuggerResult = result;
+      const startLine = lastDebuggerResult.context.runtime.nodes[0].loc.start.line - 1;
+      const endLine = lastDebuggerResult.context.runtime.nodes[0].loc.end.line - 1;
       yield put(actions.endDebuggerPause(location));
+      yield put(actions.highlightLineInEditor([[startLine, endLine]], location));
       yield put(actions.evalInterpreterSuccess("Debugger toggled", location));
     } else {
       yield put(actions.endInterruptExecution(location));
@@ -349,7 +360,10 @@ function* evalCode(code: string, context: Context, location: WorkspaceLocation, 
     yield call(showWarningMessage, 'Execution aborted by user', 750);
   } else if (paused) {
     lastDebuggerResult = manualToggleDebugger(context);
+    const startLine = lastDebuggerResult.context.runtime.nodes[0].loc.start.line - 1;
+    const endLine = lastDebuggerResult.context.runtime.nodes[0].loc.end.line - 1;
     yield put(actions.endDebuggerPause(location));
+    yield put(actions.highlightLineInEditor([[startLine, endLine]], location));
     yield call(showWarningMessage, 'Debugger toggled by user', 750);
   }
   if(temporaryResumeOnEval) {
@@ -377,9 +391,13 @@ function* evalRestofCode(code: string, context: Context, location: WorkspaceLoca
   if (result) {
     if (result.status === 'finished') {
       yield put(actions.evalInterpreterSuccess(result.value, location));
+      yield put(actions.highlightLineInEditor([], location));
     } else if (result.status === 'suspended') {
       lastDebuggerResult = result;
+      const startLine = lastDebuggerResult.context.runtime.nodes[0].loc.start.line - 1;
+      const endLine = lastDebuggerResult.context.runtime.nodes[0].loc.end.line - 1;
       yield put(actions.endDebuggerPause(location));
+      yield put(actions.highlightLineInEditor([[startLine, endLine]], location));
       yield put(actions.evalInterpreterSuccess('Debugger Toggled', location));
     } else {
       yield put(actions.evalInterpreterError(context.errors, location));
@@ -393,7 +411,10 @@ function* evalRestofCode(code: string, context: Context, location: WorkspaceLoca
     yield call(showWarningMessage, 'Execution aborted by user', 750);
   } else if (paused) {
     lastDebuggerResult = manualToggleDebugger(context);
+    const startLine = lastDebuggerResult.context.runtime.nodes[0].loc.start.line - 1;
+    const endLine = lastDebuggerResult.context.runtime.nodes[0].loc.end.line - 1;
     yield put(actions.endDebuggerPause(location));
+    yield put(actions.highlightLineInEditor([[startLine, endLine]], location));
     yield call(showWarningMessage, 'Debugger toggled', 750);
   }
 }

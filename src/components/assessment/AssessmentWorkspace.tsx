@@ -27,6 +27,8 @@ export type StateProps = {
   activeTab: number;
   assessment?: IAssessment;
   editorValue: string | null;
+  editorBreakpoints: string[];
+  editorHighlights: number[][];
   editorWidth: string;
   hasUnsavedChanges: boolean;
   isRunning: boolean;
@@ -56,6 +58,7 @@ export type DispatchProps = {
   handleClearContext: (library: Library) => void;
   handleEditorEval: () => void;
   handleEditorValueChange: (val: string) => void;
+  handleSetEditorBreakpoint: (editorBreakpoints: string[]) => void;
   handleEditorWidthChange: (widthChange: number) => void;
   handleInterruptEval: () => void;
   handleReplEval: () => void;
@@ -145,8 +148,11 @@ class AssessmentWorkspace extends React.Component<
         question.type === QuestionTypes.programming
           ? {
               editorValue: editorValue!,
+              editorBreakpoints: this.props.editorBreakpoints,
+              editorHighlights: this.props.editorHighlights,
               handleEditorEval: this.props.handleEditorEval,
               handleEditorValueChange: this.props.handleEditorValueChange,
+              handleSetEditorBreakpoint: this.props.handleSetEditorBreakpoint,
               handleUpdateHasUnsavedChanges: this.props.handleUpdateHasUnsavedChanges
             }
           : undefined,
@@ -203,6 +209,7 @@ class AssessmentWorkspace extends React.Component<
             ? ((question as IProgrammingQuestion).answer as string)
             : (question as IProgrammingQuestion).solutionTemplate
           : null;
+      this.props.handleSetEditorBreakpoint([]);
       this.props.handleUpdateCurrentAssessmentId(assessmentId, questionId);
       this.props.handleResetWorkspace({ editorValue });
       this.props.handleClearContext(question.library);

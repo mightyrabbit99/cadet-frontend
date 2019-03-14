@@ -35,6 +35,8 @@ export interface IPlaygroundProps extends IDispatchProps, IStateProps, RouteComp
 export interface IStateProps {
   activeTab: number;
   editorValue: string;
+  editorBreakpoints: string[];
+  editorHighlights: number[][];
   editorWidth: string;
   isEditorAutorun: boolean;
   isRunning: boolean;
@@ -56,6 +58,7 @@ export interface IDispatchProps {
   handleChapterSelect: (chapter: number) => void;
   handleEditorEval: () => void;
   handleEditorValueChange: (val: string) => void;
+  handleSetEditorBreakpoint: (editorBreakpoints: string[]) => void;
   handleEditorWidthChange: (widthChange: number) => void;
   handleGenerateLz: () => void;
   handleInterruptEval: () => void;
@@ -121,8 +124,11 @@ class Playground extends React.Component<IPlaygroundProps, PlaygroundState> {
       },
       editorProps: {
         editorValue: this.props.editorValue,
+        editorBreakpoints: this.props.editorBreakpoints,
+        editorHighlights: this.props.editorHighlights,
         handleEditorEval: this.props.handleEditorEval,
         handleEditorValueChange: this.props.handleEditorValueChange,
+        handleSetEditorBreakpoint: this.props.handleSetEditorBreakpoint,
         isEditorAutorun: this.props.isEditorAutorun
       },
       editorWidth: this.props.editorWidth,

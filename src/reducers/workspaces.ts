@@ -21,6 +21,7 @@ import {
   EVAL_INTERPRETER_SUCCESS,
   EVAL_REPL,
   HANDLE_CONSOLE_LOG,
+  HIGHLIGHT_LINE,
   IAction,
   LOG_OUT,
   RESET_WORKSPACE,
@@ -298,7 +299,9 @@ export const reducer: Reducer<IWorkspaceManagerState> = (
         [location]: {
           ...state[location],
           isRunning: false,
-          isDebugging: false
+          isDebugging: false,
+          editorHighlights: [],
+          editorBreakpoints: []
         }
       };
 
@@ -328,6 +331,15 @@ export const reducer: Reducer<IWorkspaceManagerState> = (
         [location]: {
           ...state[location],
           debuggerActive: false
+        }
+      };
+
+    case HIGHLIGHT_LINE:
+      return {
+        ...state,
+        [location]: {
+          ...state[location],
+          editorHighlights: action.payload.lineNum
         }
       };
 

@@ -5,6 +5,8 @@ import { ISessionState, IState } from './reducers/states';
 export type ISavedState = {
   session: Partial<ISessionState>;
   playgroundEditorValue: string | null;
+  playgroundEditorBreakpoints: string[];
+  playgroundEditorHighlights: number[][];
   playgroundIsEditorAutorun: boolean;
 };
 
@@ -32,6 +34,8 @@ export const saveState = (state: IState) => {
         name: state.session.name
       },
       playgroundEditorValue: state.workspaces.playground.editorValue,
+      playgroundEditorBreakpoints: state.workspaces.playground.editorBreakpoints,
+      playgroundEditorHighlights: state.workspaces.playground.editorHighlights,
       playgroundIsEditorAutorun: state.workspaces.playground.isEditorAutorun
     };
     const serialized = compressToUTF16(JSON.stringify(stateToBeSaved));

@@ -5,12 +5,14 @@ type controlSwitchOptionals = {
   className?: string;
   fullWidth?: boolean;
   iconOnRight?: boolean;
+  inline?: boolean;
 };
 
 const defaultOptions = {
   className: '',
   fullWidth: false,
-  iconOnRight: false
+  iconOnRight: false,
+  inline: true
 };
 
 export function controlSwitch(
@@ -24,6 +26,7 @@ export function controlSwitch(
   const opts: controlSwitchOptionals = { ...defaultOptions, ...options };
   const props: ISwitchProps = { disabled };
   props.className = opts.className;
+  props.inline = opts.inline;
   if (onChange) {
     props.onChange = onChangeFunction;
   }

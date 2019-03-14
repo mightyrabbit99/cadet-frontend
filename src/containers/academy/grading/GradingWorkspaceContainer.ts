@@ -18,6 +18,7 @@ import {
   evalEditor,
   evalRepl,
   fetchGrading,
+  setBreakpointInEditor,
   updateEditorValue,
   updateHasUnsavedChanges,
   updateReplValue,
@@ -42,6 +43,8 @@ const mapStateToProps: MapStateToProps<StateProps, OwnProps, IState> = (state, p
   return {
     activeTab: state.workspaces.grading.sideContentActiveTab,
     editorValue: state.workspaces.grading.editorValue,
+    editorBreakpoints: state.workspaces.grading.editorBreakpoints,
+    editorHighlights: state.workspaces.grading.editorHighlights,
     editorWidth: state.workspaces.grading.editorWidth,
     grading: state.session.gradings.get(props.submissionId),
     hasUnsavedChanges: state.workspaces.grading.hasUnsavedChanges,
@@ -68,6 +71,7 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps, {}> = (dispatch: Dis
       handleClearContext: (library: Library) => beginClearContext(library, workspaceLocation),
       handleEditorEval: () => evalEditor(workspaceLocation),
       handleEditorValueChange: (val: string) => updateEditorValue(val, workspaceLocation),
+      handleSetEditorBreakpoint: (editorBreakpoints: string[]) => setBreakpointInEditor(editorBreakpoints, workspaceLocation),
       handleEditorWidthChange: (widthChange: number) =>
         changeEditorWidth(widthChange, workspaceLocation),
       handleGradingFetch: fetchGrading,

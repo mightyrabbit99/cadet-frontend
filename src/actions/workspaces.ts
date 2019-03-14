@@ -161,6 +161,8 @@ export const evalRepl = (workspaceLocation: WorkspaceLocation) => ({
   payload: { workspaceLocation }
 });
 
+// debugger actions
+
 export const beginDebuggerPause = (workspaceLocation: WorkspaceLocation) => ({
   type: actionTypes.BEGIN_DEBUG_PAUSE,
   payload: { workspaceLocation }
@@ -198,6 +200,24 @@ export const updateEditorValue: ActionCreator<actionTypes.IAction> = (
   type: actionTypes.UPDATE_EDITOR_VALUE,
   payload: { newEditorValue, workspaceLocation }
 });
+
+export const setBreakpointInEditor: ActionCreator<actionTypes.IAction> = (
+  editorBreakpoints: string[],
+  workspaceLocation: WorkspaceLocation
+) => ({
+  type: actionTypes.SET_EDITOR_BREAKPOINTS,
+  payload: { editorBreakpoints, workspaceLocation }
+});
+
+export const highlightLineInEditor: ActionCreator<actionTypes.IAction> = (
+  lineNum: number[],
+  workspaceLocation: WorkspaceLocation
+) => ({
+  type: actionTypes.HIGHLIGHT_LINE,
+  payload: { lineNum, workspaceLocation }
+});
+
+// debugger actions
 
 export const updateReplValue: ActionCreator<actionTypes.IAction> = (
   newReplValue: string,

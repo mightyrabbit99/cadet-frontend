@@ -24,6 +24,8 @@ export type StateProps = {
   activeTab: number;
   grading?: Grading;
   editorValue: string | null;
+  editorBreakpoints: string[];
+  editorHighlights: number[][];
   editorWidth: string;
   hasUnsavedChanges: boolean;
   isRunning: boolean;
@@ -50,6 +52,7 @@ export type DispatchProps = {
   handleClearContext: (library: Library) => void;
   handleEditorEval: () => void;
   handleEditorValueChange: (val: string) => void;
+  handleSetEditorBreakpoint: (editorBreakpoints: string[]) => void;
   handleEditorWidthChange: (widthChange: number) => void;
   handleGradingFetch: (submissionId: number) => void;
   handleInterruptEval: () => void;
@@ -114,8 +117,11 @@ class GradingWorkspace extends React.Component<GradingWorkspaceProps> {
         question.type === QuestionTypes.programming
           ? {
               editorValue: editorValue!,
+              editorBreakpoints: this.props.editorBreakpoints,
+              editorHighlights: this.props.editorHighlights,
               handleEditorEval: this.props.handleEditorEval,
-              handleEditorValueChange: this.props.handleEditorValueChange
+              handleEditorValueChange: this.props.handleEditorValueChange,
+              handleSetEditorBreakpoint: this.props.handleSetEditorBreakpoint
             }
           : undefined,
       editorWidth: this.props.editorWidth,
@@ -168,6 +174,7 @@ class GradingWorkspace extends React.Component<GradingWorkspaceProps> {
             ? ((question as IProgrammingQuestion).answer as string)
             : (question as IProgrammingQuestion).solutionTemplate
           : null;
+      this.props.handleSetEditorBreakpoint([]);
       this.props.handleUpdateCurrentSubmissionId(submissionId, questionId);
       this.props.handleResetWorkspace({ editorValue });
       this.props.handleClearContext(question.library);

@@ -25,6 +25,7 @@ export interface IStateProps {
 export interface IDispatchProps {
   handleClearContext: (chapter: number, externalLibraryName: ExternalLibraryName) => void;
   handleEditorValueChange: (val: string) => void;
+  handleSetEditorBreakpoint: (editorBreakpoints: string[]) => void;
   handleEnsureLibrariesLoaded: () => void;
   handleLogOut: () => void;
   handlePlaygroundExternalSelect: (external: ExternalLibraryName) => void;
