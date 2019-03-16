@@ -340,7 +340,9 @@ function* evalCode(code: string, context: Context, location: WorkspaceLocation, 
   if (result) {
     if (result.status === 'finished') {
       yield put(actions.evalInterpreterSuccess(result.value, location));
-      yield put(actions.highlightLineInEditor([], location));
+      if(!temporaryResumeOnEval) {
+        yield put(actions.highlightLineInEditor([], location));
+      }
     } else if (result.status === 'suspended') {
       lastDebuggerResult = result;
       const startLine = lastDebuggerResult.context.runtime.nodes[0].loc.start.line - 1;
