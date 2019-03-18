@@ -383,10 +383,6 @@ function* evalCode(code: string, context: Context, location: WorkspaceLocation, 
   if (result) {
     if (result.status === 'finished') {
       yield put(actions.evalInterpreterSuccess(result.value, location));
-<<<<<<< HEAD
-      inspectorUpdate(context);
-=======
->>>>>>> fedaf779821005b04a19ceea4d508ee1e46ff2b0
       if(!temporaryResumeOnEval) {
         yield put(actions.highlightLineInEditor([], location));
       }
