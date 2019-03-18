@@ -2,13 +2,13 @@ import { IconNames } from '@blueprintjs/icons';
 import * as React from 'react';
 import { HotKeys } from 'react-hotkeys';
 import { RouteComponentProps } from 'react-router';
-
 import { InterpreterOutput } from '../reducers/states';
 import { LINKS } from '../utils/constants';
 import { ExternalLibraryName } from './assessment/assessmentShape';
 import Markdown from './commons/Markdown';
 import Workspace, { WorkspaceProps } from './workspace';
 import { SideContentTab } from './workspace/side-content';
+import Inspector, { InspectorProps } from './workspace/side-content/Inspector';
 import ListVisualizer from './workspace/side-content/ListVisualizer';
 
 const CHAP = '\xa7';
@@ -70,6 +70,9 @@ export interface IDispatchProps {
   handleToggleEditorAutorun: () => void;
   handleDebuggerPause: () => void;
   handleDebuggerResume: (debuggerActive: boolean) => void;
+  handleDebuggerNext: () => void;
+  handleDebuggerStepOver: () => void;
+  handleDebuggerStepOut: () => void;
   handleDebuggerReset: () => void;
   handleActivateDebugger: () => void;
   handleDeactivateDebugger: () => void;
@@ -91,6 +94,15 @@ class Playground extends React.Component<IPlaygroundProps, PlaygroundState> {
   }
 
   public render() {
+    const inspectorProps: InspectorProps = {
+      isRunning: this.props.isRunning,
+      isDebugging: this.props.isDebugging,
+      debuggerActive: this.props.debuggerActive,
+      debuggerAllowed: this.props.debuggerAllowed,
+      handleDebuggerNext: this.props.handleDebuggerNext,
+      handleDebuggerStepOver: this.props.handleDebuggerStepOver,
+      handleDebuggerStepOut: this.props.handleDebuggerStepOut
+    };
     const workspaceProps: WorkspaceProps = {
       controlBarProps: {
         externalLibraryName: this.props.externalLibraryName,
@@ -146,7 +158,7 @@ class Playground extends React.Component<IPlaygroundProps, PlaygroundState> {
       sideContentProps: {
         activeTab: this.props.activeTab,
         handleChangeActiveTab: this.props.handleChangeActiveTab,
-        tabs: [playgroundIntroductionTab, listVisualizerTab]
+        tabs: [playgroundIntroductionTab, listVisualizerTab, inspectorTab(inspectorProps)]
       }
     };
     return (
@@ -176,5 +188,11 @@ const listVisualizerTab: SideContentTab = {
   icon: IconNames.EYE_OPEN,
   body: <ListVisualizer />
 };
+
+const inspectorTab = (inspectorProps: InspectorProps): SideContentTab => ({
+  label: 'Inspector',
+  icon: IconNames.SEARCH,
+  body: <Inspector {...inspectorProps} />
+});
 
 export default Playground;

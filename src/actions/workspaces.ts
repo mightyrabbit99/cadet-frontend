@@ -173,6 +173,11 @@ export const endDebuggerPause = (workspaceLocation: WorkspaceLocation) => ({
   payload: { workspaceLocation }
 });
 
+export const debuggerNext = (workspaceLocation: WorkspaceLocation) => ({
+  type: actionTypes.DEBUG_NEXT,
+  payload: { workspaceLocation }
+});
+
 export const debuggerResume = (workspaceLocation: WorkspaceLocation, debuggerActive: boolean) => ({
   type: actionTypes.DEBUG_RESUME,
   payload: { debuggerActive, workspaceLocation }
@@ -180,6 +185,16 @@ export const debuggerResume = (workspaceLocation: WorkspaceLocation, debuggerAct
 
 export const debuggerReset = (workspaceLocation: WorkspaceLocation) => ({
   type: actionTypes.DEBUG_RESET,
+  payload: { workspaceLocation }
+});
+
+export const debuggerStepOver = (workspaceLocation: WorkspaceLocation) => ({
+  type: actionTypes.DEBUG_STEP_OVER,
+  payload: { workspaceLocation }
+});
+
+export const debuggerStepOut = (workspaceLocation: WorkspaceLocation) => ({
+  type: actionTypes.DEBUG_STEP_OUT,
   payload: { workspaceLocation }
 });
 

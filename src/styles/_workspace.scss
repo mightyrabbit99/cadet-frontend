@@ -127,6 +127,24 @@ $code-color-error: #ff4444;
     flex-direction: column;
   }
 
+  .side-content-header-button-alert{
+    -webkit-animation: alert 1s infinite;
+    -moz-animation: alert 1s infinite;
+    -o-animation: alert 1s infinite;
+    animation: alert 1s infinite;
+  }
+
+  @keyframes alert {}
+
+  @-webkit-keyframes alert{
+    0%, 50% {
+      background-color: rgba(200,100,50,0.5);
+    }
+    51%, 100% {
+      background-image: rgba(138,155,168,0.3);
+    }
+  }
+
   .side-content-header {
     align-items: center;
     display: flex;
@@ -213,6 +231,13 @@ $code-color-error: #ff4444;
       code {
         color: black !important;
       }
+    }
+  }
+
+  .mde-preview .mde-preview-content pre {
+    background-color: $cadet-color-5 !important;
+    code {
+      color: black !important;
     }
   }
 

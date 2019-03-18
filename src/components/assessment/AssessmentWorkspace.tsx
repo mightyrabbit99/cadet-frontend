@@ -71,6 +71,9 @@ export type DispatchProps = {
   handleUpdateHasUnsavedChanges: (hasUnsavedChanges: boolean) => void;
   handleDebuggerPause: () => void;
   handleDebuggerResume: (debuggerActive: boolean) => void;
+  handleDebuggerNext: () => void;
+  handleDebuggerStepOver: () => void;
+  handleDebuggerStepOut: () => void;
   handleDebuggerReset: () => void;
   handleActivateDebugger: () => void;
   handleDeactivateDebugger: () => void;
@@ -287,6 +290,9 @@ class AssessmentWorkspace extends React.Component<
       handleReplValueChange: this.props.handleReplValueChange,
       handleDebuggerPause: this.props.handleDebuggerPause,
       handleDebuggerResume: this.props.handleDebuggerResume,
+      handleDebuggerNext: this.props.handleDebuggerNext,
+      handleDebuggerStepOver: this.props.handleDebuggerStepOver,
+      handleDebuggerStepOut: this.props.handleDebuggerStepOut,
       handleDebuggerReset: this.props.handleDebuggerReset,
       handleActivateDebugger: this.props.handleActivateDebugger,
       handleDeactivateDebugger: this.props.handleDeactivateDebugger,

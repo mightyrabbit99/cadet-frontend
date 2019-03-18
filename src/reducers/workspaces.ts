@@ -11,8 +11,11 @@ import {
   CLEAR_REPL_INPUT,
   CLEAR_REPL_OUTPUT,
   DEACTIVATE_DEBUG,
+  DEBUG_NEXT,
   DEBUG_RESET,
   DEBUG_RESUME,
+  DEBUG_STEP_OUT,
+  DEBUG_STEP_OVER,
   END_CLEAR_CONTEXT,
   END_DEBUG_PAUSE,
   END_INTERRUPT_EXECUTION,
@@ -313,6 +316,36 @@ export const reducer: Reducer<IWorkspaceManagerState> = (
           isRunning: true,
           isDebugging: false,
           debuggerActive: action.payload.debuggerActive
+        }
+      };
+
+    case DEBUG_NEXT:
+      return {
+        ...state,
+        [location]: {
+          ...state[location],
+          isRunning: true,
+          isDebugging: false
+        }
+      };
+
+    case DEBUG_STEP_OVER:
+      return {
+        ...state,
+        [location]: {
+          ...state[location],
+          isRunning: true,
+          isDebugging: false
+        }
+      };
+
+    case DEBUG_STEP_OUT:
+      return {
+        ...state,
+        [location]: {
+          ...state[location],
+          isRunning: true,
+          isDebugging: false
         }
       };
 

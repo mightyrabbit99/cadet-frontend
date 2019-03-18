@@ -85,9 +85,6 @@ function* workspaceSaga(): SagaIterator {
 
   yield takeEvery(actionTypes.DEBUG_RESUME, function*(action) {
     const location = (action as actionTypes.IAction).payload.workspaceLocation;
-    const code: string = yield select(
-      (state: IState) => (state.workspaces[location] as IWorkspaceState).editorValue
-    );
     yield put(actions.beginInterruptExecution(location));
     /** Clear the context, with the same chapter and externalSymbols as before. */
     yield put(actions.clearReplOutput(location));
@@ -95,7 +92,43 @@ function* workspaceSaga(): SagaIterator {
       (state: IState) => (state.workspaces[location] as IWorkspaceState).context
     );
     yield put(actions.highlightLineInEditor([], location));
-    yield* evalRestofCode(code, context, location);
+    yield* evalRestofCode(actionTypes.DEBUG_RESUME, context, location);
+  });
+
+  yield takeEvery(actionTypes.DEBUG_NEXT, function*(action) {
+    const location = (action as actionTypes.IAction).payload.workspaceLocation;
+    yield put(actions.beginInterruptExecution(location));
+    /** Clear the context, with the same chapter and externalSymbols as before. */
+    yield put(actions.clearReplOutput(location));
+    context = yield select(
+      (state: IState) => (state.workspaces[location] as IWorkspaceState).context
+    );
+    yield put(actions.highlightLineInEditor([], location));
+    yield* evalRestofCode(actionTypes.DEBUG_NEXT, context, location);
+  });
+
+  yield takeEvery(actionTypes.DEBUG_STEP_OVER, function*(action) {
+    const location = (action as actionTypes.IAction).payload.workspaceLocation;
+    yield put(actions.beginInterruptExecution(location));
+    /** Clear the context, with the same chapter and externalSymbols as before. */
+    yield put(actions.clearReplOutput(location));
+    context = yield select(
+      (state: IState) => (state.workspaces[location] as IWorkspaceState).context
+    );
+    yield put(actions.highlightLineInEditor([], location));
+    yield* evalRestofCode(actionTypes.DEBUG_STEP_OVER, context, location);
+  });
+
+  yield takeEvery(actionTypes.DEBUG_STEP_OUT, function*(action) {
+    const location = (action as actionTypes.IAction).payload.workspaceLocation;
+    yield put(actions.beginInterruptExecution(location));
+    /** Clear the context, with the same chapter and externalSymbols as before. */
+    yield put(actions.clearReplOutput(location));
+    context = yield select(
+      (state: IState) => (state.workspaces[location] as IWorkspaceState).context
+    );
+    yield put(actions.highlightLineInEditor([], location));
+    yield* evalRestofCode(actionTypes.DEBUG_STEP_OUT, context, location);
   });
 
   yield takeEvery(actionTypes.DEBUG_RESET, function*(action) {
@@ -314,10 +347,20 @@ function* playgroundSaga(): SagaIterator {
 let lastDebuggerResult: any;
 let debuggerActivated: boolean = false;
 
+function inspectorUpdate(context: Context) {
+  if ((window as any).Inspector) {
+    (window as any).Inspector.updateContext({ context });
+  } else {
+    throw new Error('Inspector not enabled');
+  }
+}
+
 function* evalCode(code: string, context: Context, location: WorkspaceLocation, debuggerActive: boolean) {
   let temporaryResumeOnEval: boolean = false;
+  let lastErrors: any = [];
   if(context.debugger.toggled) {
     temporaryResumeOnEval = true;
+    lastErrors = context.errors.slice();
     yield put(actions.deactivateDebugger(location));
     resetDebugger(context);
     disableDebugger(context);
@@ -340,9 +383,13 @@ function* evalCode(code: string, context: Context, location: WorkspaceLocation, 
   if (result) {
     if (result.status === 'finished') {
       yield put(actions.evalInterpreterSuccess(result.value, location));
-      yield put(actions.highlightLineInEditor([], location));
+      inspectorUpdate(context);
+      if(!temporaryResumeOnEval) {
+        yield put(actions.highlightLineInEditor([], location));
+      }
     } else if (result.status === 'suspended') {
       lastDebuggerResult = result;
+      inspectorUpdate(context);
       const startLine = lastDebuggerResult.context.runtime.nodes[0].loc.start.line - 1;
       const endLine = lastDebuggerResult.context.runtime.nodes[0].loc.end.line - 1;
       yield put(actions.endDebuggerPause(location));
@@ -360,6 +407,7 @@ function* evalCode(code: string, context: Context, location: WorkspaceLocation, 
     yield call(showWarningMessage, 'Execution aborted by user', 750);
   } else if (paused) {
     lastDebuggerResult = manualToggleDebugger(context);
+    inspectorUpdate(context);
     const startLine = lastDebuggerResult.context.runtime.nodes[0].loc.start.line - 1;
     const endLine = lastDebuggerResult.context.runtime.nodes[0].loc.end.line - 1;
     yield put(actions.endDebuggerPause(location));
@@ -367,6 +415,7 @@ function* evalCode(code: string, context: Context, location: WorkspaceLocation, 
     yield call(showWarningMessage, 'Debugger toggled by user', 750);
   }
   if(temporaryResumeOnEval) {
+    context.errors = lastErrors;
     enableDebugger(context);
     manualToggleDebugger(context);
     yield put(actions.endDebuggerPause(location));
@@ -374,7 +423,7 @@ function* evalCode(code: string, context: Context, location: WorkspaceLocation, 
   }
 }
 
-function* evalRestofCode(code: string, context: Context, location: WorkspaceLocation) {
+function* evalRestofCode(type: any, context: Context, location: WorkspaceLocation) {
   if(!debuggerActivated) {
     resetDebugger(context);
     disableDebugger(context);
@@ -391,9 +440,11 @@ function* evalRestofCode(code: string, context: Context, location: WorkspaceLoca
   if (result) {
     if (result.status === 'finished') {
       yield put(actions.evalInterpreterSuccess(result.value, location));
+      inspectorUpdate(context);
       yield put(actions.highlightLineInEditor([], location));
     } else if (result.status === 'suspended') {
       lastDebuggerResult = result;
+      inspectorUpdate(context);
       const startLine = lastDebuggerResult.context.runtime.nodes[0].loc.start.line - 1;
       const endLine = lastDebuggerResult.context.runtime.nodes[0].loc.end.line - 1;
       yield put(actions.endDebuggerPause(location));
@@ -411,6 +462,7 @@ function* evalRestofCode(code: string, context: Context, location: WorkspaceLoca
     yield call(showWarningMessage, 'Execution aborted by user', 750);
   } else if (paused) {
     lastDebuggerResult = manualToggleDebugger(context);
+    inspectorUpdate(context);
     const startLine = lastDebuggerResult.context.runtime.nodes[0].loc.start.line - 1;
     const endLine = lastDebuggerResult.context.runtime.nodes[0].loc.end.line - 1;
     yield put(actions.endDebuggerPause(location));

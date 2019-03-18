@@ -2,7 +2,6 @@
 import createSlangContext from 'js-slang/dist/createContext';
 import { stringify } from 'js-slang/dist/interop';
 import { Value } from 'js-slang/dist/types';
-
 import { handleConsoleLog } from '../actions';
 
 /**
