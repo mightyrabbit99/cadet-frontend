@@ -119,9 +119,14 @@ class Editor extends React.PureComponent<IEditorProps, {}> {
         let content = e.editor.session.getLine(row);
         const breakpoints = e.editor.session.getBreakpoints(row, 0);
 
+        function notValidBreakpoint(s: string) {
+          const ss = s.replace(/\s/g, '').replace(/else/g, '').replace(/if/g, '').replace(/{/g, '').replace(/}/g, '');
+          return ss.length === 0 || ss.substring(0, 2) === "//";
+        }
+
         if (typeof breakpoints[row] === typeof undefined) {
-          if(content.replace(/\s/g, '').substring(0,2) === "//" ) {
-            while(content.replace(/\s/g, '').substring(0,2) === "//" && row < e.editor.session.$rowLengthCache.length) {
+          if(notValidBreakpoint(content)) {
+            while(notValidBreakpoint(content) && row < e.editor.session.$rowLengthCache.length) {
               row++;
               content = e.editor.session.getLine(row);
             }

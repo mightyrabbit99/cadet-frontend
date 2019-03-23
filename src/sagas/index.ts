@@ -1,5 +1,6 @@
 import { 
-  Context, 
+  Context,
+  DebuggerMode,
   disableDebugger,
   enableDebugger,
   interrupt, 
@@ -383,6 +384,7 @@ function* evalCode(code: string, context: Context, location: WorkspaceLocation, 
   if (result) {
     if (result.status === 'finished') {
       yield put(actions.evalInterpreterSuccess(result.value, location));
+      inspectorUpdate(context);
       if(!temporaryResumeOnEval) {
         yield put(actions.highlightLineInEditor([], location));
       }
@@ -422,13 +424,13 @@ function* evalCode(code: string, context: Context, location: WorkspaceLocation, 
   }
 }
 
-function* evalRestofCode(type: any, context: Context, location: WorkspaceLocation) {
+function* evalRestofCode(type: DebuggerMode, context: Context, location: WorkspaceLocation) {
   if(!debuggerActivated) {
     resetDebugger(context);
     disableDebugger(context);
   }
   const { result, interrupted, paused } = yield race({
-    result: call(resume, lastDebuggerResult),
+    result: call(resume, type, lastDebuggerResult),
     /**
      * A BEGIN_INTERRUPT_EXECUTION signals the beginning of an interruption,
      * i.e the trigger for the interpreter to interrupt execution.

@@ -100,6 +100,7 @@ class Playground extends React.Component<IPlaygroundProps, PlaygroundState> {
       debuggerActive: this.props.debuggerActive,
       debuggerAllowed: this.props.debuggerAllowed,
       handleDebuggerNext: this.props.handleDebuggerNext,
+      handleDebuggerResume: this.props.handleDebuggerResume,
       handleDebuggerStepOver: this.props.handleDebuggerStepOver,
       handleDebuggerStepOut: this.props.handleDebuggerStepOut
     };

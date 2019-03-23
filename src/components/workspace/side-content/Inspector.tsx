@@ -10,6 +10,7 @@ export type InspectorProps = {
   debuggerActive: boolean,
   debuggerAllowed: boolean,
   handleDebuggerNext: () => void;
+  handleDebuggerResume: (debuggerActive: boolean) => void;
   handleDebuggerStepOver: () => void;
   handleDebuggerStepOut: () => void;
 };
@@ -24,6 +25,7 @@ class Inspector extends React.Component<InspectorProps, {}> {
     }
 
   public render() {
+    const resumeButton = controlButton('Resume', IconNames.STOP, () => this.props.handleDebuggerResume(this.props.debuggerActive), {}, !this.props.isDebugging);
     const nextButton = (
       <Tooltip content="click to proceed to the next step of evaluation" disabled={!this.props.isDebugging}>
         {controlButton('Next', IconNames.STOP, this.props.handleDebuggerNext, {}, !this.props.isDebugging)}
@@ -41,7 +43,7 @@ class Inspector extends React.Component<InspectorProps, {}> {
     );
     return (
         <div className="Inspector">
-          <div className="pt-button-group">{nextButton}{stepOverButton}{stepOutButton}</div>
+          <div className="pt-button-group">{resumeButton}{nextButton}{stepOverButton}{stepOutButton}</div>
           <div ref={r => (this.$parent = r)} className="sa-inspector" />
         </div>
     );
